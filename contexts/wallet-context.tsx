@@ -12,7 +12,6 @@ import {
   StellarWalletsKit,
   WalletNetwork,
   allowAllModules,
-  FREIGHTER_ID,
 } from "@creit.tech/stellar-wallets-kit";
 
 interface WalletContextType {
@@ -34,7 +33,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const stellarKit = new StellarWalletsKit({
       network: WalletNetwork.TESTNET,
-      selectedWalletId: FREIGHTER_ID,
+      selectedWalletId: "freighter",
       modules: allowAllModules(),
     });
     setKit(stellarKit);
