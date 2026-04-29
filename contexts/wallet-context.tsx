@@ -10,9 +10,10 @@ import {
 } from "react";
 import {
   StellarWalletsKit,
-  WalletNetwork,
-  allowAllModules,
+  Networks,
 } from "@creit.tech/stellar-wallets-kit";
+import { FreighterModule } from "@creit.tech/stellar-wallets-kit/modules/freighter";
+import { AlbedoModule } from "@creit.tech/stellar-wallets-kit/modules/albedo";
 
 interface WalletContextType {
   address: string | null;
@@ -28,35 +29,31 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [kit, setKit] = useState<StellarWalletsKit | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const stellarKit = new StellarWalletsKit({
-      network: WalletNetwork.TESTNET,
+    // Initialize the kit with static method
+    StellarWalletsKit.init({
+      network: Networks.TESTNET,
       selectedWalletId: "freighter",
-      modules: allowAllModules(),
+      modules: [new FreighterModule(), new AlbedoModule()],
     });
-    setKit(stellarKit);
+    setIsInitialized(true);
   }, []);
 
   const connect = useCallback(async () => {
-    if (!kit) return;
+    if (!isInitialized) return;
 
     setIsConnecting(true);
     try {
-      await kit.openModal({
-        onWalletSelected: async (option) => {
-          kit.setWallet(option.id);
-          const { address: walletAddress } = await kit.getAddress();
-          setAddress(walletAddress);
-        },
-      });
+      const { address: walletAddress } = await StellarWalletsKit.authModal();
+      setAddress(walletAddress);
     } catch (error) {
       console.error("Failed to connect wallet:", error);
     } finally {
       setIsConnecting(false);
     }
-  }, [kit]);
+  }, [isInitialized]);
 
   const disconnect = useCallback(() => {
     setAddress(null);
