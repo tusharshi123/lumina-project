@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { GrantCard } from "./grant-card";
-import { TrendingUp, Filter } from "lucide-react";
+import { TrendingUp, Filter, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useContractEvents } from "@/hooks/use-contract-events";
+import { useTransactionTracker } from "@/hooks/use-transaction-tracker";
 
 const grants = [
   {
@@ -68,6 +71,25 @@ const grants = [
 ];
 
 export function ImpactFeed() {
+  const { events } = useContractEvents();
+  const { transactions } = useTransactionTracker();
+  const [totalRaised, setTotalRaised] = useState(2.4);
+  const [totalDonors, setTotalDonors] = useState(1247);
+
+  // Update stats based on real transactions
+  useEffect(() => {
+    const successTransactions = transactions.filter((tx) => tx.status === "success");
+    const totalAmount = successTransactions.reduce((sum, tx) => sum + tx.amount, 0);
+    const uniqueDonors = new Set(successTransactions.map((tx) => tx.wallet)).size;
+
+    if (totalAmount > 0) {
+      setTotalRaised((prev) => prev + totalAmount);
+    }
+    if (uniqueDonors > 0) {
+      setTotalDonors((prev) => prev + uniqueDonors);
+    }
+  }, [transactions]);
+
   return (
     <section id="impact" className="py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -92,14 +114,26 @@ export function ImpactFeed() {
           </Button>
         </div>
 
+        {/* Live Events Indicator */}
+        {events.length > 0 && (
+          <div className="mb-6 rounded-lg border border-accent/20 bg-accent/5 p-4 flex items-center gap-3">
+            <Activity className="h-5 w-5 text-accent animate-pulse" />
+            <p className="text-sm text-accent">
+              {events.length} live donation{events.length === 1 ? "" : "s"} received
+            </p>
+          </div>
+        )}
+
         {/* Stats Bar */}
         <div className="mb-8 grid grid-cols-2 gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-4">
           <div className="text-center">
-            <p className="text-2xl font-bold text-foreground">$2.4M</p>
+            <p className="text-2xl font-bold text-foreground">
+              ${totalRaised.toFixed(1)}M
+            </p>
             <p className="text-sm text-muted-foreground">Total Raised</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-foreground">1,247</p>
+            <p className="text-2xl font-bold text-foreground">{totalDonors.toLocaleString()}</p>
             <p className="text-sm text-muted-foreground">Active Donors</p>
           </div>
           <div className="text-center">
@@ -115,7 +149,7 @@ export function ImpactFeed() {
         {/* Grant Cards Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {grants.map((grant) => (
-            <GrantCard key={grant.id} {...grant} />
+            <GrantCard key={grant.id} {...grant} grantId={grant.id} />
           ))}
         </div>
       </div>
