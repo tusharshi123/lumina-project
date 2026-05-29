@@ -1,5 +1,5 @@
 "use client";
-
+import { contractService } from "@/services/contract-service";
 import {
   createContext,
   useContext,
@@ -36,19 +36,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    try {
-      // Initialize the kit with static method
-      StellarWalletsKit.init({
-        network: Networks.TESTNET,
-        selectedWalletId: "freighter",
-        modules: [new FreighterModule(), new AlbedoModule()],
-      });
-      setIsInitialized(true);
-    } catch (err) {
-      console.error("[WalletProvider] Initialization error:", err);
-      setError("Failed to initialize wallet. Please refresh the page.");
-    }
-  }, []);
+  try {
+    StellarWalletsKit.init({
+      network: Networks.TESTNET,
+      selectedWalletId: "freighter",
+      modules: [new FreighterModule(), new AlbedoModule()],
+    });
+
+    contractService.initialize(); // ADD THIS
+
+    setIsInitialized(true);
+  } catch (err) {
+    console.error("[WalletProvider] Initialization error:", err);
+    setError("Failed to initialize wallet. Please refresh the page.");
+  }
+}, []);
 
   const connect = useCallback(async () => {
     if (!isInitialized) {
