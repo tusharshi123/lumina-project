@@ -41,7 +41,7 @@ export default function RootLayout({
         <WalletProvider>
           {children}
         </WalletProvider>
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        <Analytics />
       </body>
     </html>
   )
