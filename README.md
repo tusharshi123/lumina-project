@@ -171,9 +171,9 @@ Track the implementation:
 - ✓ **Public GitHub Repository**: [tusharshi123/lumina-project](https://github.com/tusharshi123/lumina-project)
 - ✓ **README with Setup Instructions**: You are reading it!
 - ✓ **Meaningful Commits**: 5+ implementation stages tracked
-- ✓ **Live Demo**: [Vercel Deployment](https://lumina-project.vercel.app)
+- ✓ **Live Demo**:https://lumina-project-nu.vercel.app
 - ✓ **Screenshot**: Wallet connection options visible in navbar
-- ✓ **Deployed Contract Address**: See `.env.local` after deployment
+- ✓ **Deployed Contract Address**:CBGH6NXDC3SY62IAIZARK6F3L52JDYRQUXTQNW7NKWGOI5MNJO2L67A5
 - ✓ **Transaction Hash**: Verifiable on Stellar Explorer
 
 ## Technology Stack
