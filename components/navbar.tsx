@@ -1,88 +1,178 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
-
-const navLinks = [
-  { name: 'About', href: '#about' },
-  { name: 'Skills', href: '#skills' },
-  { name: 'Projects', href: '#projects' },
-  { name: 'Contact', href: '#contact' },
-];
+import { Wallet, Sparkles, Menu, X, LogOut, Copy, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useWallet } from "@/contexts/wallet-context";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { isConnected, isConnecting, connect, disconnect, truncatedAddress, address } = useWallet();
 
-  const handleNavClick = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsOpen(false);
+  const copyAddress = async () => {
+    if (address) {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-40 border-b border-border/50 backdrop-blur-sm bg-background/80">
-      <div className="max-w-6xl mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+    <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <motion.a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            whileHover={{ scale: 1.05 }}
-            className="text-xl font-bold text-accent"
-          >
-            Portfolio
-          </motion.a>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <button
-                key={link.name}
-                onClick={() => handleNavClick(link.href)}
-                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
-              >
-                {link.name}
-              </button>
-            ))}
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
+              <Sparkles className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="text-xl font-semibold tracking-tight text-foreground">
+              Lumina
+            </span>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 hover:bg-secondary rounded-lg transition-colors"
-          >
-            {isOpen ? (
-              <X className="w-6 h-6" />
+          {/* Desktop Navigation */}
+          <div className="hidden items-center gap-8 md:flex">
+            <a
+              href="#impact"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Impact Feed
+            </a>
+            <a
+              href="#explorer"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Contract Explorer
+            </a>
+            <a
+              href="#about"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              About
+            </a>
+          </div>
+
+          {/* Connect Wallet Button */}
+          <div className="hidden md:block">
+            {isConnected ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="gap-2 border-primary/30 bg-primary/10 text-foreground hover:bg-primary/20"
+                  >
+                    <div className="h-2 w-2 rounded-full bg-accent" />
+                    {truncatedAddress}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={copyAddress} className="cursor-pointer gap-2">
+                    {copied ? (
+                      <Check className="h-4 w-4 text-accent" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                    {copied ? "Copied!" : "Copy Address"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={disconnect} 
+                    className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Disconnect
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Menu className="w-6 h-6" />
+              <Button 
+                onClick={connect}
+                disabled={isConnecting}
+                className="gap-2 bg-primary px-5 text-primary-foreground hover:bg-primary/90"
+              >
+                <Wallet className="h-4 w-4" />
+                {isConnecting ? "Connecting..." : "Connect Wallet"}
+              </Button>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6 text-foreground" />
+            ) : (
+              <Menu className="h-6 w-6 text-foreground" />
             )}
           </button>
         </div>
 
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="md:hidden mt-4 space-y-2 pb-4"
-          >
-            {navLinks.map((link) => (
-              <button
-                key={link.name}
-                onClick={() => handleNavClick(link.href)}
-                className="block w-full text-left px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="border-t border-border py-4 md:hidden">
+            <div className="flex flex-col gap-4">
+              <a
+                href="#impact"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                {link.name}
-              </button>
-            ))}
-          </motion.div>
+                Impact Feed
+              </a>
+              <a
+                href="#explorer"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Contract Explorer
+              </a>
+              <a
+                href="#about"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                About
+              </a>
+              {isConnected ? (
+                <div className="mt-2 flex flex-col gap-2">
+                  <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2">
+                    <div className="h-2 w-2 rounded-full bg-accent" />
+                    <span className="text-sm font-medium text-foreground">{truncatedAddress}</span>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={copyAddress}
+                    className="gap-2"
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    {copied ? "Copied!" : "Copy Address"}
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={disconnect}
+                    className="gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Disconnect
+                  </Button>
+                </div>
+              ) : (
+                <Button 
+                  onClick={connect}
+                  disabled={isConnecting}
+                  className="mt-2 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  <Wallet className="h-4 w-4" />
+                  {isConnecting ? "Connecting..." : "Connect Wallet"}
+                </Button>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </nav>
