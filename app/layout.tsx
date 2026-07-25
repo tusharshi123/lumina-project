@@ -1,15 +1,14 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { WalletProvider } from '@/contexts/wallet-context'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Lumina - Stellar Philanthropy',
-  description: 'A Stellar-based philanthropic platform for transparent giving',
+  title: 'Portfolio | Full-Stack Developer',
+  description: 'A modern portfolio showcasing projects, skills, and experience as a full-stack developer',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -38,9 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background">
       <body className="font-sans antialiased">
-        <WalletProvider>
-          {children}
-        </WalletProvider>
+        {children}
         <Analytics />
       </body>
     </html>
