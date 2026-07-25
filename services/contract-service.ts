@@ -32,34 +32,41 @@ class ContractService {
   private kit: StellarWalletsKit | null = null;
   private transactions: Map<string, TransactionStatus> = new Map();
 
+  setKit(kit: StellarWalletsKit): void {
+    this.kit = kit;
+    console.log('[ContractService] Kit initialized successfully');
+  }
+
+  getKit(): StellarWalletsKit | null {
+    return this.kit;
+  }
+
+  isInitialized(): boolean {
+    return this.kit !== null;
+  }
+
   async initialize(): Promise<void> {
     try {
-      const FreighterModule = await import('@creit.tech/stellar-wallets-kit/freighter').then(
-        (m) => m.FreighterModule
-      );
-      const AlbedoModule = await import('@creit.tech/stellar-wallets-kit/albedo').then(
-        (m) => m.AlbedoModule
-      );
-
-      this.kit = StellarWalletsKit.init({
-        network: Networks.TESTNET,
-        modules: [new FreighterModule(), new AlbedoModule()],
-      });
+      // Kit should be set by WalletProvider before this is called
+      if (!this.kit) {
+        console.warn('[ContractService] Kit not yet initialized - waiting for WalletProvider setup');
+        return;
+      }
+      console.log('[ContractService] Initialized successfully');
     } catch (error) {
-      throw new ContractError('Failed to initialize contract service');
+      console.error('[ContractService] Initialization error:', error);
+      // Don't throw - allow graceful degradation
     }
   }
 
   async callDonate(grantId: number, amount: number): Promise<TransactionStatus> {
-    if (!this.kit) {
-      throw new WalletError('Contract service not initialized');
-    }
-
     try {
-      const address = await StellarWalletsKit.authModal();
-      if (!address) {
+      // Use the global StellarWalletsKit instance
+      const result = await StellarWalletsKit.authModal();
+      if (!result || !result.address) {
         throw new WalletError('Wallet connection rejected');
       }
+      const address = result.address;
 
       // Check balance
       const balance = await this.checkBalance(address);
