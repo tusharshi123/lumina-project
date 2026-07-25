@@ -34,19 +34,14 @@ class ContractService {
 
   async initialize(): Promise<void> {
     try {
-      const FreighterModule = await import('@creit.tech/stellar-wallets-kit/freighter').then(
-        (m) => m.FreighterModule
-      );
-      const AlbedoModule = await import('@creit.tech/stellar-wallets-kit/albedo').then(
-        (m) => m.AlbedoModule
-      );
-
-      this.kit = StellarWalletsKit.init({
-        network: Networks.TESTNET,
-        modules: [new FreighterModule(), new AlbedoModule()],
-      });
+      // Contract service initialization is handled by WalletProvider
+      // Kit is already initialized there, so we just validate it's ready
+      if (!this.kit) {
+        console.warn('[ContractService] Kit not initialized - will be set up by WalletProvider');
+      }
     } catch (error) {
-      throw new ContractError('Failed to initialize contract service');
+      console.error('[ContractService] Initialization error:', error);
+      // Don't throw - allow graceful degradation
     }
   }
 

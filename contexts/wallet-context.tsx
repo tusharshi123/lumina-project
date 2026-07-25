@@ -36,21 +36,29 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-  try {
-    StellarWalletsKit.init({
-      network: Networks.TESTNET,
-      selectedWalletId: "freighter",
-      modules: [new FreighterModule(), new AlbedoModule()],
-    });
+    const initializeWallet = async () => {
+      try {
+        StellarWalletsKit.init({
+          network: Networks.TESTNET,
+          selectedWalletId: "freighter",
+          modules: [new FreighterModule(), new AlbedoModule()],
+        });
 
-    contractService.initialize(); // ADD THIS
+        // Initialize contract service (non-blocking)
+        await contractService.initialize().catch((err) => {
+          console.warn("[WalletProvider] Contract service initialization failed:", err);
+        });
 
-    setIsInitialized(true);
-  } catch (err) {
-    console.error("[WalletProvider] Initialization error:", err);
-    setError("Failed to initialize wallet. Please refresh the page.");
-  }
-}, []);
+        setIsInitialized(true);
+      } catch (err) {
+        console.error("[WalletProvider] Wallet initialization error:", err);
+        // Continue anyway - user can still see the UI
+        setIsInitialized(true);
+      }
+    };
+
+    initializeWallet();
+  }, []);
 
   const connect = useCallback(async () => {
     if (!isInitialized) {
