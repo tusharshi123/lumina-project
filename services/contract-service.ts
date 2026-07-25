@@ -32,13 +32,27 @@ class ContractService {
   private kit: StellarWalletsKit | null = null;
   private transactions: Map<string, TransactionStatus> = new Map();
 
+  setKit(kit: StellarWalletsKit): void {
+    this.kit = kit;
+    console.log('[ContractService] Kit initialized successfully');
+  }
+
+  getKit(): StellarWalletsKit | null {
+    return this.kit;
+  }
+
+  isInitialized(): boolean {
+    return this.kit !== null;
+  }
+
   async initialize(): Promise<void> {
     try {
-      // Contract service initialization is handled by WalletProvider
-      // Kit is already initialized there, so we just validate it's ready
+      // Kit should be set by WalletProvider before this is called
       if (!this.kit) {
-        console.warn('[ContractService] Kit not initialized - will be set up by WalletProvider');
+        console.warn('[ContractService] Kit not yet initialized - waiting for WalletProvider setup');
+        return;
       }
+      console.log('[ContractService] Initialized successfully');
     } catch (error) {
       console.error('[ContractService] Initialization error:', error);
       // Don't throw - allow graceful degradation
@@ -46,15 +60,13 @@ class ContractService {
   }
 
   async callDonate(grantId: number, amount: number): Promise<TransactionStatus> {
-    if (!this.kit) {
-      throw new WalletError('Contract service not initialized');
-    }
-
     try {
-      const address = await StellarWalletsKit.authModal();
-      if (!address) {
+      // Use the global StellarWalletsKit instance
+      const result = await StellarWalletsKit.authModal();
+      if (!result || !result.address) {
         throw new WalletError('Wallet connection rejected');
       }
+      const address = result.address;
 
       // Check balance
       const balance = await this.checkBalance(address);

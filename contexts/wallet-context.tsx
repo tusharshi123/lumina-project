@@ -38,16 +38,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initializeWallet = async () => {
       try {
-        StellarWalletsKit.init({
+        const kit = StellarWalletsKit.init({
           network: Networks.TESTNET,
           selectedWalletId: "freighter",
           modules: [new FreighterModule(), new AlbedoModule()],
         });
 
-        // Initialize contract service (non-blocking)
-        await contractService.initialize().catch((err) => {
-          console.warn("[WalletProvider] Contract service initialization failed:", err);
-        });
+        // Pass kit to contract service for reference
+        contractService.setKit(kit);
 
         setIsInitialized(true);
       } catch (err) {
